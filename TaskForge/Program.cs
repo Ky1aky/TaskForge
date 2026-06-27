@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using TaskForge.Data;
 
@@ -6,6 +7,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Register Entity Framework Core
 builder.Services.AddDbContext<TaskForgeDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// Register Cookie Authentication
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Account/Login";
+        options.AccessDeniedPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+
+        options.Cookie.Name = "TaskForgeAuth";
+
+        options.ExpireTimeSpan = TimeSpan.FromDays(7);
+
+        options.SlidingExpiration = true;
+    });
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -21,7 +37,10 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
