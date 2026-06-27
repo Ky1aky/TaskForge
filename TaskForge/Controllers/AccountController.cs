@@ -24,6 +24,11 @@ namespace TaskForge.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View();
         }
 
@@ -50,10 +55,10 @@ namespace TaskForge.Controllers
                 Email = model.Email
             };
 
-            // Save user with hashed password
+            // Register user (password will be hashed)
             await _userService.RegisterUserAsync(user, model.Password);
 
-            // Redirect to Login page
+            // Redirect to Login
             return RedirectToAction(nameof(Login));
         }
 
@@ -64,6 +69,11 @@ namespace TaskForge.Controllers
         [HttpGet]
         public IActionResult Login()
         {
+            if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                return RedirectToAction("Index", "Dashboard");
+            }
+
             return View();
         }
 
@@ -76,7 +86,7 @@ namespace TaskForge.Controllers
                 return View(model);
             }
 
-            // Validate the user
+            // Validate user credentials
             var user = await _userService.ValidateUserAsync(model.Email, model.Password);
 
             if (user == null)
@@ -87,11 +97,11 @@ namespace TaskForge.Controllers
 
             // Create user claims
             var claims = new List<Claim>
-    {
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.FullName),
-            new Claim(ClaimTypes.Email, user.Email)
-    };
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.FullName),
+                new Claim(ClaimTypes.Email, user.Email)
+            };
 
             // Create identity
             var claimsIdentity = new ClaimsIdentity(
@@ -114,12 +124,13 @@ namespace TaskForge.Controllers
         // LOGOUT
         // ==========================
 
+        [HttpGet]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(
                 CookieAuthenticationDefaults.AuthenticationScheme);
 
-            return RedirectToAction("Login");
+            return RedirectToAction(nameof(Login));
         }
     }
 }
