@@ -52,5 +52,34 @@ namespace TaskForge.Services
 
             return valid ? user : null;
         }
+
+        // Change password
+        public async Task<bool> ChangePasswordAsync(
+            int userId,
+            string currentPassword,
+            string newPassword)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.UserId == userId);
+
+            if (user == null)
+                return false;
+
+            bool valid = _passwordService.VerifyPassword(
+                user,
+                user.PasswordHash,
+                currentPassword);
+
+            if (!valid)
+                return false;
+
+            user.PasswordHash = _passwordService.HashPassword(
+                user,
+                newPassword);
+
+            await _context.SaveChangesAsync();
+
+            return true;
+        }
     }
 }

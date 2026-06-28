@@ -1,0 +1,79 @@
+﻿@model TaskForge.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "My Profile";
+    Layout = "_DashboardLayout";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+    <div>
+        <h2 class="fw-bold mb-1">My Profile</h2>
+        <p class="text-muted mb-0">
+            View your account information.
+        </p>
+    </div>
+
+    <div>
+
+        <a asp-action="Edit"
+           class="btn btn-primary">
+            Edit Profile
+        </a>
+
+        <a asp-action="ChangePassword"
+           class="btn btn-outline-secondary ms-2">
+            Change Password
+        </a>
+
+    </div>
+
+</div>
+
+<div class="card shadow-sm border-0">
+
+    <div class="card-body">
+
+        <div class="row mb-3">
+
+            <div class="col-md-3 fw-semibold">
+                Full Name
+            </div>
+
+            <div class="col-md-9">
+                @Model.FullName
+            </div>
+
+        </div>
+
+        <hr />
+
+        <div class="row mb-3">
+
+            <div class="col-md-3 fw-semibold">
+                Email Address
+            </div>
+
+            <div class="col-md-9">
+                @Model.Email
+            </div>
+
+        </div>
+
+        <hr />
+
+        <div class="row">
+
+            <div class="col-md-3 fw-semibold">
+                Member Since
+            </div>
+
+            <div class="col-md-9">
+                @Model.DateCreated.ToString("MMMM dd, yyyy")
+            </div>
+
+        </div>
+
+    </div>
+
+</div>

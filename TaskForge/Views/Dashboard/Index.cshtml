@@ -1,87 +1,143 @@
-﻿@{
+﻿@model TaskForge.ViewModels.DashboardViewModel
+
+@{
     ViewData["Title"] = "Dashboard";
     Layout = "_DashboardLayout";
-
-    var hour = DateTime.Now.Hour;
-
-    var greeting = "";
-
-    if (hour < 12)
-    {
-        greeting = "Good Morning";
-    }
-    else if (hour < 18)
-    {
-        greeting = "Good Afternoon";
-    }
-    else
-    {
-        greeting = "Good Evening";
-    }
 }
 
-<div class="mb-4">
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <h2 class="fw-bold">
+    <div>
+        <h2 class="fw-bold mb-1">
+            Welcome, @Model.FullName 👋
+        </h2>
 
-        @greeting,
-        @User.Identity?.Name 👋
+        <p class="text-muted mb-0">
+            Here's an overview of your productivity.
+        </p>
+    </div>
 
-    </h2>
+    <a asp-controller="Tasks"
+       asp-action="Create"
+       class="btn btn-primary">
 
-    <p class="text-muted">
+        + Create Task
 
-        Here's your productivity summary.
-
-    </p>
+    </a>
 
 </div>
 
-<div class="row g-4">
+<!-- Statistics Cards -->
 
-    <div class="col-md-3">
+<div class="row g-4 mb-4">
 
-        <div class="card text-center p-4">
+    <div class="col-lg-3 col-md-6">
 
-            <h6>Total Tasks</h6>
+        <div class="card border-0 shadow-sm h-100">
 
-            <h2 class="fw-bold">0</h2>
+            <div class="card-body d-flex justify-content-between align-items-center">
 
-        </div>
+                <div>
 
-    </div>
+                    <small class="text-muted d-block">
+                        Total Tasks
+                    </small>
 
-    <div class="col-md-3">
+                    <h2 class="fw-bold mb-0">
+                        @Model.TotalTasks
+                    </h2>
 
-        <div class="card text-center p-4">
+                </div>
 
-            <h6>Pending</h6>
+                <div class="fs-1">
+                    📋
+                </div>
 
-            <h2 class="fw-bold text-warning">0</h2>
-
-        </div>
-
-    </div>
-
-    <div class="col-md-3">
-
-        <div class="card text-center p-4">
-
-            <h6>In Progress</h6>
-
-            <h2 class="fw-bold text-primary">0</h2>
+            </div>
 
         </div>
 
     </div>
 
-    <div class="col-md-3">
+    <div class="col-lg-3 col-md-6">
 
-        <div class="card text-center p-4">
+        <div class="card border-0 shadow-sm h-100">
 
-            <h6>Completed</h6>
+            <div class="card-body d-flex justify-content-between align-items-center">
 
-            <h2 class="fw-bold text-success">0</h2>
+                <div>
+
+                    <small class="text-muted d-block">
+                        Pending
+                    </small>
+
+                    <h2 class="fw-bold text-warning mb-0">
+                        @Model.PendingTasks
+                    </h2>
+
+                </div>
+
+                <div class="fs-1">
+                    ⏳
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted d-block">
+                        In Progress
+                    </small>
+
+                    <h2 class="fw-bold text-primary mb-0">
+                        @Model.InProgressTasks
+                    </h2>
+
+                </div>
+
+                <div class="fs-1">
+                    🚧
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+
+        <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body d-flex justify-content-between align-items-center">
+
+                <div>
+
+                    <small class="text-muted d-block">
+                        Completed
+                    </small>
+
+                    <h2 class="fw-bold text-success mb-0">
+                        @Model.CompletedTasks
+                    </h2>
+
+                </div>
+
+                <div class="fs-1">
+                    ✅
+                </div>
+
+            </div>
 
         </div>
 
@@ -89,46 +145,76 @@
 
 </div>
 
-<div class="card mt-4 p-4">
+<!-- Recent Tasks -->
 
-    <h4>
+<div class="card shadow-sm border-0">
 
-        Task Completion Progress
+    <div class="card-header bg-white">
 
-    </h4>
+        <h5 class="mb-0 fw-semibold">
 
-    <div class="progress mt-3">
+            Recent Tasks
 
-        <div class="progress-bar"
-             role="progressbar"
-             style="width:0%">
-
-            0%
-
-        </div>
+        </h5>
 
     </div>
 
-</div>
+    <div class="card-body p-0">
 
-<div class="card mt-4 p-4">
+        @if (!Model.RecentTasks.Any())
+        {
+            <div class="p-4 text-center text-muted">
 
-    <h4>
+                You haven't created any tasks yet.
 
-        Recent Tasks
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
 
-    </h4>
+                <table class="table table-hover mb-0">
 
-    <hr />
+                    <thead class="table-light">
 
-    <p class="text-muted">
+                        <tr>
 
-        No tasks yet.
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Due Date</th>
 
-        <br />
+                        </tr>
 
-        Click "Create Task" to get started.
+                    </thead>
 
-    </p>
+                    <tbody>
+
+                        @foreach (var task in Model.RecentTasks)
+                        {
+                            <tr>
+
+                                <td>@task.Title</td>
+
+                                <td>@task.Category</td>
+
+                                <td>@task.Priority</td>
+
+                                <td>@task.Status</td>
+
+                                <td>@task.DueDate.ToString("MMM dd, yyyy")</td>
+
+                            </tr>
+                        }
+
+                    </tbody>
+
+                </table>
+
+            </div>
+        }
+
+    </div>
 
 </div>
