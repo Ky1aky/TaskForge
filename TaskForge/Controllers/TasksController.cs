@@ -19,13 +19,49 @@ namespace TaskForge.Controllers
             _context = context;
         }
 
-        public IActionResult Index()
+        public IActionResult Index(
+             string? searchString,
+             int? categoryId,
+             int? priorityId,
+             int? statusId,
+             string? sortBy)
         {
             int userId = int.Parse(
                 User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-            var tasks = _context.Tasks
-                .Where(t => t.UserId == userId)
+            var query = _context.Tasks
+                .Where(t => t.UserId == userId);
+
+            // Search
+            if (!string.IsNullOrWhiteSpace(searchString))
+            {
+                query = query.Where(t =>
+                    t.Title.Contains(searchString));
+            }
+
+            // Category Filter
+            if (categoryId.HasValue)
+            {
+                query = query.Where(t =>
+                    t.CategoryId == categoryId.Value);
+            }
+
+            // Priority Filter
+            if (priorityId.HasValue)
+            {
+                query = query.Where(t =>
+                    t.PriorityId == priorityId.Value);
+            }
+
+            // Status Filter
+            if (statusId.HasValue)
+            {
+                query = query.Where(t =>
+                    t.StatusId == statusId.Value);
+            }
+
+            // Project first
+            var taskList = query
                 .Select(t => new TaskListViewModel
                 {
                     TaskId = t.TaskId,
@@ -34,11 +70,60 @@ namespace TaskForge.Controllers
                     Priority = t.Priority!.PriorityName,
                     Status = t.Status!.StatusName,
                     DueDate = t.DueDate
-                })
-                .OrderBy(t => t.DueDate)
-                .ToList();
+                });
 
-            return View(tasks);
+            // Sorting
+            taskList = sortBy switch
+            {
+                "due_desc" => taskList.OrderByDescending(t => t.DueDate),
+
+                "title_asc" => taskList.OrderBy(t => t.Title),
+
+                "title_desc" => taskList.OrderByDescending(t => t.Title),
+
+                "priority" => taskList.OrderByDescending(t =>
+                    t.Priority == "High" ? 3 :
+                    t.Priority == "Medium" ? 2 : 1),
+
+                _ => taskList.OrderBy(t => t.DueDate)
+            };
+
+            var model = new TaskIndexViewModel
+            {
+                SearchString = searchString,
+                SortBy = sortBy,
+                CategoryId = categoryId,
+                PriorityId = priorityId,
+                StatusId = statusId,
+
+                Categories = _context.Categories
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.CategoryId.ToString(),
+                        Text = c.CategoryName
+                    })
+                    .ToList(),
+
+                Priorities = _context.Priorities
+                    .Select(p => new SelectListItem
+                    {
+                        Value = p.PriorityId.ToString(),
+                        Text = p.PriorityName
+                    })
+                    .ToList(),
+
+                Statuses = _context.Statuses
+                    .Select(s => new SelectListItem
+                    {
+                        Value = s.StatusId.ToString(),
+                        Text = s.StatusName
+                    })
+                    .ToList(),
+
+                Tasks = taskList.ToList()
+            };
+
+            return View(model);
         }
 
         // ==========================
@@ -121,6 +206,8 @@ namespace TaskForge.Controllers
 
             _context.SaveChanges();
 
+            TempData["Success"] = "Task created successfully.";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -128,32 +215,7 @@ namespace TaskForge.Controllers
         // Helper Method
         // ==========================
 
-        private void LoadDropdowns(TaskCreateViewModel model)
-        {
-            model.Categories = _context.Categories
-                .Select(c => new SelectListItem
-                {
-                    Value = c.CategoryId.ToString(),
-                    Text = c.CategoryName
-                })
-                .ToList();
-
-            model.Priorities = _context.Priorities
-                .Select(p => new SelectListItem
-                {
-                    Value = p.PriorityId.ToString(),
-                    Text = p.PriorityName
-                })
-                .ToList();
-
-            model.Statuses = _context.Statuses
-                .Select(s => new SelectListItem
-                {
-                    Value = s.StatusId.ToString(),
-                    Text = s.StatusName
-                })
-                .ToList();
-        }
+    
 
         // ==========================
         // Get Edit
@@ -222,6 +284,8 @@ namespace TaskForge.Controllers
 
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Task updated successfully.";
+
             return RedirectToAction(nameof(Index));
         }
 
@@ -277,6 +341,8 @@ namespace TaskForge.Controllers
 
             _context.Tasks.Remove(task);
             _context.SaveChanges();
+
+            TempData["Success"] = "Task deleted successfully.";
 
             return RedirectToAction(nameof(Index));
         }
